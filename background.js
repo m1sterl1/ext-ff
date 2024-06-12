@@ -1,28 +1,26 @@
 import init, { solve } from "./pkg/wasm.js";
 
-console.log("Background start...")
+console.log("[B] start...")
 
 await init();
 
 let LAST;
-let PORT;
 
-function connected(p) {
-  PORT = p;
-  console.log("Connected");
-  browser.webRequest.onBeforeRequest.addListener(
-    listener,
-    {urls: [
-      "https://app.0xterminal.game/api/game/last",
-      "https://app.0xterminal.game/api/game/move"]},
-    ["blocking"]
-  );
+function send_message(m){
+  browser.tabs
+  .query({
+    currentWindow: true,
+    active: true,
+  })
+  .then(tabs=>{
+    let tab = tabs[0];
+    console.log(`[B] tab ${tab.id}`);
+    return browser.tabs.sendMessage(tab.id, m);
+  })
+  .catch(console.log);
 }
 
-
-
 function listener(details) {
-  console.log(`Loading ${details.url}`);
   let filter = browser.webRequest.filterResponseData(details.requestId);
   let decoder = new TextDecoder("utf-8");
   filter.ondata = event => {
@@ -32,8 +30,8 @@ function listener(details) {
       LAST = last;
       let guesses = last.wordGuessHistory.map((el)=> [el.word, el.amountGuessed]) ;
       let answer = solve(last.words, guesses);
-      console.log(answer);
-      PORT.postMessage(answer);
+      console.log("[B] Sending answer");
+      send_message(answer);
 
     }
     filter.write(event.data);
@@ -43,4 +41,15 @@ function listener(details) {
   return {};
 }
 
-browser.runtime.onConnect.addListener(connected);
+browser.tabs
+  .executeScript({ file: "/content.js" })
+  .then(_=>{
+    browser.webRequest.onBeforeRequest.addListener(
+      listener,
+      {urls: [
+        "https://app.0xterminal.game/api/game/last",
+        "https://app.0xterminal.game/api/game/move"]},
+      ["blocking"]
+    );
+  })
+  .catch((e) => console.log(e));

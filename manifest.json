@@ -12,12 +12,6 @@
     "webRequest", "webRequestBlocking", "https://app.0xterminal.game/*"
   ],
 
-  "content_scripts": [
-    {
-      "matches": ["https://app.0xterminal.game/*"],
-      "js": ["content.js"]
-    }
-  ],
   "background": {
     "scripts": ["background.js"],
     "type": "module"

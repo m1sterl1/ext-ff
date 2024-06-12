@@ -1,4 +1,7 @@
 (() => {
+    // original symbols saved, Map{position: symbol}
+    let SAVED = new Map();
+
     console.log('[C] Start')
     if (window.hasRun) {
         return;
@@ -23,12 +26,12 @@
             .querySelectorAll(".cursor-pointer span"))
             .map(el=>el.textContent)
             .join('');
-        words.forEach(([word, _]) => highlight_word_deskop(text, word));
+        words.forEach(([word, cost]) => highlight_word_deskop(text, word, cost));
     }
 
 
-    function highlight_word_deskop(text, word){
-        console.log(`[C] highligt word ${word}`)
+    function highlight_word_deskop(text, word, cost){
+        console.log(`[C] highligt word ${word} ${cost}`)
         let i1 = text.search(word);
         let i2 = i1 + word.length;
         Array.from(
@@ -38,14 +41,41 @@
         .forEach(span=>{
             span.style.backgroundColor="green";
         });
+        highlight_cost_desktop(cost, i2);
+
+    }
+
+    // i2: last index of the word
+    function highlight_cost_desktop(cost, i2){
+        let symbols = Array.from(
+            document.querySelectorAll(".cursor-pointer span")
+        )
+        symbols = i2+3 > symbols.length?symbols.slice(i2-3,i2):symbols.slice(i2,i2+3);
+
+        symbols.forEach((span, i)=>{
+            span.style.backgroundColor="green";
+            SAVED.set(i2+i, symbols[0].textContent);
+        });
+
+        symbols[0].textContent = "(";
+        symbols[1].textContent = cost;
+        symbols[2].textContent = ")"
+        
+
     }
 
     function clear_highlight_desktop(){
         console.log("[C] clear highlight")
-        Array.from(
+        let symbols = Array.from(
             document.querySelectorAll(".cursor-pointer span")
-        )
-        .forEach(span=>{span.style = ""});
+        );
+
+        symbols.forEach(span=>{span.style = ""});
+
+        SAVED.forEach((sym, i)=>{
+            symbols[i].textContent = sym; 
+        });
+        SAVED.clear();
     }
 
     function is_desktop(){

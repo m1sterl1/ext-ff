@@ -2,21 +2,8 @@
     console.log('[C] Start')
     if (window.hasRun) {
         return;
-      }
+    }
     window.hasRun = true;
-
-    browser.runtime.onMessage.addListener((m) => {
-        console.log(`[C] Get ${m}`);
-        // Get min cost life elements
-        if (m.length !== 0){
-            let min = filter_min_cost(m);
-            console.log(`[C] ${min}`)
-            highlight_desktop(min);
-
-        } else {
-            console.error("[C] empty array");
-        }
-    });
 
     // Reducing answer array [["word", cost],...]
     // to contain only minimal cost words
@@ -39,8 +26,9 @@
         words.forEach(([word, _]) => highlight_word_deskop(text, word));
     }
 
-    
+
     function highlight_word_deskop(text, word){
+        console.log(`[C] highligt word ${word}`)
         let i1 = text.search(word);
         let i2 = i1 + word.length;
         Array.from(
@@ -53,10 +41,31 @@
     }
 
     function clear_highlight_desktop(){
+        console.log("[C] clear highlight")
         Array.from(
             document.querySelectorAll(".cursor-pointer span")
         )
-        .slice(i1, i2)
         .forEach(span=>{span.style = ""});
     }
+
+    function is_desktop(){
+        return true;
+    }
+
+    browser.runtime.onMessage.addListener((m) => {
+        console.log(`[C] Get ${m}`);
+        // Get min cost life elements
+        if (m.length !== 0){
+            if (is_desktop()){
+                clear_highlight_desktop()
+                let min = filter_min_cost(m);
+                console.log(`[C] ${min}`)
+                highlight_desktop(min);
+            }
+ 
+
+        } else {
+            console.error("[C] empty array solver");
+        }
+    });
 })();

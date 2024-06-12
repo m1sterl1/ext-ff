@@ -41,8 +41,20 @@ function listener(details) {
   return {};
 }
 
+function first_request(){
+  console.log("[B] Sending first answer");
+  return fetch("https://app.0xterminal.game/api/game/last")
+  .then(r=>r.json())
+  .then(last=>{
+    let guesses = last.wordGuessHistory.map((el)=> [el.word, el.amountGuessed]);
+    let answer = solve(last.words, guesses);
+    send_message(answer);
+  });
+}
+
 browser.tabs
   .executeScript({ file: "/content.js" })
+  .then(_=> first_request())
   .then(_=>{
     browser.webRequest.onBeforeRequest.addListener(
       listener,
